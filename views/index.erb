@@ -4,9 +4,21 @@
   <title>Keygen element test page</title>
 </head>
 <body>
+  <h1>Client certificate</h1>
   <form action="/submit" method="post" enctype="multipart/form-data">
-    <p><keygen keytype="rsa" name="key"></keygen></p>
-    <input type="submit" value="submit" />
+    <p>
+      <label for="username">Your name:</label>
+      <input id="username" type="text" name="username" />
+    </p>
+    <p>
+      <label for="email">Your email:</label>
+      <input id="email" type="email" name="email" />
+    </p>
+    <p>
+      <label for="key">Key bits</label>
+      <keygen id="key" keytype="rsa" name="key"></keygen>
+    </p>
+    <p><input type="submit" value="submit" /></p>
   </form>
 </body>
 </html>

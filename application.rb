@@ -3,10 +3,8 @@ require 'tempfile'
 require 'date'
 
 $opts = {
-  name: 'John Smith',
-  email: 'john@smith.com',
   certificate: 'Company client certificate',
-  organization: 'Whitebox.io',
+  organization: 'Whitebox.io LLC',
   country: 'RU',
   province: 'Moscow',
   locality: 'Moscow'
@@ -21,10 +19,10 @@ def clear_newlines( token )
   token.gsub( /[\s\t\n\r\0\x0B]/, '' )
 end
 
-def format_spkac( key )
+def format_spkac( username, email, key )
   "SPKAC=#{clear_newlines( key )}" +
-  "\nCN=#{$opts[:name]}" +
-  "\nemailAddress=#{$opts[:email]}" +
+  "\nCN=#{username}" +
+  "\nemailAddress=#{email}" +
   "\n0.OU=#{$opts[:certificate]} client certificate" +
   "\norganizationName=#{$opts[:organization]}" +
   "\ncountryName=#{$opts[:country]}" +
@@ -38,7 +36,6 @@ def save_spkac!( spkac_key )
     File.expand_path( './tmp/certificates' )
   )
   spkac_file.write( spkac_key )
-  system( "ls -la #{spkac_file.path}" )
   spkac_file.close
   spkac_file.path
 end
@@ -55,7 +52,7 @@ def sign_spkac!( spkac_filename )
                   "-spkac #{spkac_filename} " +
                   "-out #{certificate_filename} " +
                   "-passin pass:'#{$ssl[:pass]}'"
-  p [ spkac_filename, certificate_filename ].to_s
+  system( sign_command )
   certificate_filename
 end
 
@@ -78,10 +75,12 @@ end
 
 post '/submit' do
   key = params[ 'key' ]
+  username = params[ 'username' ]
+  email = params[ 'email' ]
   if key.nil?
     redirect '/'
   end
-  spkac_key = format_spkac( key )
+  spkac_key = format_spkac( username, email, key )
   spkac_filename = save_spkac!( spkac_key )
   signed_filename = sign_spkac!( spkac_filename )
   respond_with_certificate( signed_filename )
